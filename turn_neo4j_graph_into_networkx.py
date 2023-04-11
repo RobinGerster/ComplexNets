@@ -1,8 +1,8 @@
 import pandas as pd
 from neo4j import GraphDatabase
 import networkx as nx
-import pickle
-from tqdm import tqdm
+import dill
+from neo4j.time import DateTime, Date
 
 # Connect to Neo4j
 HOST = 'neo4j://localhost'
@@ -37,7 +37,14 @@ while True:
         break
 
     for node in nodes:
-        G.add_node(node.element_id, labels=node._labels, properties=node._properties)
+        props = {}
+        for k, v in node._properties.items():
+            if isinstance(v, DateTime) or isinstance(v, Date):
+                props[k] = v.to_native()
+            else:
+                props[k] = v
+        # print(props)
+        G.add_node(node.element_id, labels=node._labels, properties=props)
 
     skip += chunk_size
 
@@ -55,14 +62,22 @@ while True:
         break
 
     for rel in rels:
-        G.add_edge(rel.start_node.element_id, rel.end_node.element_id, key=rel.element_id, type=rel.type, properties=rel._properties)
+        props = {}
+        for k, v in rel._properties.items():
+            if isinstance(v, DateTime) or isinstance(v, Date):
+                props[k] = v.to_native()
+            else:
+                props[k] = v
+        # if len(props.items()) > 1:
+        #     print(props)
+        G.add_edge(rel.start_node.element_id, rel.end_node.element_id, key=rel.element_id, type=rel.type, properties=props)
 
     skip += chunk_size
 
 print("Saving")
 # Save the graph to a file using pickle
 with open('graph.pkl', 'wb') as f:
-    pickle.dump(G, f)
+    dill.dump(G, f)
 
 # Iterate over each node and print its label
 for node in G.nodes():
