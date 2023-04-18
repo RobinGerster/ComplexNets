@@ -215,7 +215,10 @@ def infection_sim_fraud_metrics(infection_info: list, fraud_group: set):
         infection_duration = last_time - first_time
         average_time = (sum([e[0] for e in infection_info]) / len(infection_info)) - first_time
         num_fraud_nodes_infected = len(infection_info_filtered)
-        fraud_infection_speed = num_fraud_nodes_infected / infection_duration
+        if infection_duration > 0:
+            fraud_infection_speed = num_fraud_nodes_infected / infection_duration
+        else:
+            fraud_infection_speed = 0
         return infection_duration, average_time, num_fraud_nodes_infected, fraud_infection_speed
     return 0.0, 0.0, 0, 0.0
 
