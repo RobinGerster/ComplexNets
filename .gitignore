@@ -5,3 +5,4 @@ compute_metrics_results.json
 *.dill
 *.zip
 *.json
+*.pyc
